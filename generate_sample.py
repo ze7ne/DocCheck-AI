@@ -1,8 +1,3 @@
-"""
-Generates a realistic sample personal loan agreement PDF for testing DocCheck AI.
-Run: python generate_sample.py
-Output: sample_loan_agreement.pdf
-"""
 
 from fpdf import FPDF, XPos, YPos
 from datetime import date
