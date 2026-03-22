@@ -1,90 +1,79 @@
-# DocCheck AI — Анализатор финансовых документов
+# DocCheck AI — Financial Document Analyzer
 
-AI-парсер договоров на основе **Gemini 2.0 Flash Lite**. Загружаешь PDF кредита, ипотеки или страховки — получаешь подробный разбор скрытых комиссий, штрафов и подводных камней на простом языке.
-
----
-
-## Возможности
-
-- **Drag & drop** загрузка PDF-файлов (до 20 МБ)
-- Обнаружение **скрытых комиссий и сборов** с суммами
-- Список **штрафов и пеней** с уровнем серьёзности
-- Выявление **опасных пунктов** договора с рекомендациями
-- **Красные флаги** — критические предупреждения
-- **Ключевые условия** сделки (ставка, срок, сумма)
-- **Общее заключение** — стоит ли подписывать
-- Индикатор уровня риска: низкий / средний / высокий / критический
-- Профессиональный тёмный дизайн, адаптивная вёрстка
+An AI-powered contract parser built on **Google Gemini**. Upload a PDF of a loan, mortgage, credit agreement, or insurance policy and get a plain-language breakdown of hidden fees, penalties, and risky clauses before you sign.
 
 ---
 
-## Стек технологий
+## Features
 
-| Слой     | Технология                          |
-|----------|-------------------------------------|
-| Backend  | Python 3.10+, FastAPI, Uvicorn      |
-| AI       | Google Gemini 2.0 Flash Lite (PDF)  |
-| Frontend | HTML5, CSS3, Vanilla JS             |
+- **Drag & drop** PDF upload (up to 20 MB)
+- Detection of **hidden fees and charges**, with amounts where stated
+- List of **penalties and fines**, each with a severity level
+- Identification of **dangerous clauses**, with a recommendation for each
+- **Red flags**: critical warnings
+- **Key conditions** of the deal (rate, term, amount, etc.)
+- **Overall verdict**: should you sign, and why
+- Overall risk indicator: low / medium / high / critical
+- Dark, responsive UI
 
 ---
 
-## Быстрый старт
+## Tech Stack
 
-### 1. Клонировать / распаковать проект
+| Layer    | Technology                                   |
+|----------|----------------------------------------------|
+| Backend  | Python 3.10+, FastAPI, Uvicorn               |
+| AI       | Google Gemini (`gemini-3-flash-preview`), native PDF input |
+| Frontend | HTML5, CSS3, Vanilla JavaScript              |
 
-```
-AI_DocCheck/
-├── backend/
-│   ├── main.py
-│   ├── requirements.txt
-│   └── .env
-├── frontend/
-│   ├── index.html
-│   ├── style.css
-│   └── script.js
-└── start.sh
+---
+
+## Quick Start
+
+### 1. Get the project
+
+```bash
+git clone <repository-url>
+cd AI_DocCheck
 ```
 
-### 2. Указать Gemini API ключ
+### 2. Set your Gemini API key
 
-Откройте `backend/.env` и вставьте ваш ключ:
+```bash
+cp backend/.env.example backend/.env
+```
+
+Then open `backend/.env` and set your key:
 
 ```env
-GEMINI_API_KEY=ваш_ключ_здесь
+GEMINI_API_KEY=your_key_here
 ```
 
-Получить ключ бесплатно: https://aistudio.google.com/apikey
+You can get a free key at https://aistudio.google.com/apikey.
 
-### 3. Запустить
+### 3. Run
 
-**Вариант A — одной командой (macOS/Linux):**
+**Option A: one command (macOS/Linux)**
 
 ```bash
 ./start.sh
 ```
 
-Скрипт создаст виртуальное окружение, установит зависимости, запустит сервер и откроет браузер.
+The script creates a virtual environment, installs dependencies, opens the frontend in your browser (macOS), and starts the server.
 
----
-
-**Вариант B — вручную:**
+**Option B: manually**
 
 ```bash
-# Создать и активировать окружение
 cd backend
 python3 -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
-
-# Установить зависимости
 pip install -r requirements.txt
-
-# Запустить сервер
 python main.py
 ```
 
-Затем открыть `frontend/index.html` в браузере.
+Then open `frontend/index.html` in your browser.
 
-Сервер доступен по адресу: `http://localhost:8000`
+The API runs at `http://localhost:8000`. The frontend expects this address (see `API_BASE` in `frontend/script.js`).
 
 ---
 
@@ -92,70 +81,96 @@ python main.py
 
 ### `POST /analyze`
 
-Анализирует PDF-документ.
+Analyzes a PDF document.
 
-**Request:** `multipart/form-data` с полем `file` (PDF)
+**Request:** `multipart/form-data` with a `file` field (PDF)
+
+```bash
+curl -F "file=@contract.pdf" http://localhost:8000/analyze
+```
 
 **Response:**
+
 ```json
 {
   "success": true,
   "filename": "contract.pdf",
   "data": {
-    "document_type": "Кредитный договор",
+    "document_type": "Loan agreement",
     "document_summary": "...",
     "risk_level": "high",
     "risk_explanation": "...",
-    "hidden_fees": [...],
-    "penalties": [...],
-    "dangerous_clauses": [...],
-    "key_conditions": [...],
-    "red_flags": [...],
-    "recommendations": [...],
+    "hidden_fees":       [{ "title": "...", "description": "...", "amount": "...", "severity": "medium" }],
+    "penalties":         [{ "title": "...", "description": "...", "amount": "...", "severity": "high" }],
+    "dangerous_clauses": [{ "title": "...", "description": "...", "recommendation": "...", "severity": "critical" }],
+    "key_conditions":    [{ "label": "Interest rate", "value": "..." }],
+    "red_flags": ["..."],
+    "recommendations": ["..."],
     "overall_verdict": "..."
   }
 }
 ```
 
-**Уровни риска:** `low` | `medium` | `high` | `critical`
+**Risk levels:** `low` | `medium` | `high` | `critical`
 
-**Уровни серьёзности пунктов:** `low` | `medium` | `high` | `critical`
+**Severity levels:** `low` | `medium` | `high` (fees and penalties); `low` | `medium` | `high` | `critical` (dangerous clauses)
+
+**Errors:**
+
+| Status | Reason                                         |
+|--------|------------------------------------------------|
+| 400    | No file, non-PDF file, empty file, or > 20 MB  |
+| 401    | Invalid Gemini API key                         |
+| 422    | The AI response could not be parsed as JSON    |
+| 429    | Gemini rate limit or quota exceeded            |
+| 500    | Any other analysis failure                     |
 
 ### `GET /health`
 
-Проверка состояния сервера.
+Health check. Returns `{"status": "ok", "model": "<model name>"}`.
 
 ---
 
-## Структура проекта
+## Sample Document
+
+`generate_sample.py` builds a fictional personal loan agreement full of hidden fees and risky clauses, which is useful for testing the analyzer. It requires `fpdf2`:
+
+```bash
+pip install fpdf2
+python generate_sample.py
+```
+
+Before running it, set `output_path` near the end of the script to where you want the PDF saved.
+
+---
+
+## Project Structure
 
 ```
 backend/
-  main.py           — FastAPI приложение, интеграция с Gemini API
-  requirements.txt  — зависимости Python
-  .env              — переменные окружения (API ключ)
-  .env.example      — пример конфигурации
-  venv/             — виртуальное окружение
+  main.py           FastAPI app and Gemini integration
+  requirements.txt  Python dependencies
+  .env.example      Example configuration (copy to .env)
 
 frontend/
-  index.html        — разметка интерфейса
-  style.css         — стили (тёмная тема, компоненты)
-  script.js         — логика: загрузка файла, запрос к API, рендеринг
+  index.html        UI markup
+  style.css         Styles (dark theme, components)
+  script.js         Upload handling, API call, results rendering
 
-start.sh            — скрипт быстрого запуска
+generate_sample.py  Generates a sample loan agreement PDF for testing
+start.sh            Quick-start script
 ```
 
 ---
 
-## Ограничения
+## Limitations
 
-- Поддерживается только формат **PDF**
-- Максимальный размер файла: **20 МБ**
-- Анализ выполняется ИИ и носит **информационный** характер
-- Для юридически значимых решений проконсультируйтесь с лицензированным юристом
+- Only **PDF** files are supported
+- Maximum file size: **20 MB**
+- Analysis is generated by AI and is **for informational purposes only**. It is not legal advice. For legally significant decisions, consult a licensed attorney.
 
 ---
 
-## Лицензия
+## License
 
-MIT
+[MIT](LICENSE)
